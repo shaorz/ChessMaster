@@ -7,7 +7,12 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TCPClient {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(TCPClient.class);
 	private Socket clientSocket;
     private PrintWriter out;
     private BufferedReader in;
@@ -18,23 +23,21 @@ public class TCPClient {
 			out = new PrintWriter(clientSocket.getOutputStream(), true);
 	        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Client can't find the target server {}:{}", ip, port);
+			LOGGER.error("Exception:{}", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Client can't connect to the target server {}:{}", ip, port);
+			LOGGER.error("Exception:{}", e);
 		}
     }
 
     public String sendMessage(String msg) {
     	String resp = "";
 		try {
-			out.println(msg);
-	        
+			out.println(msg);	        
 			resp = in.readLine();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Client can't send {} to the target server due to {}", msg, e);
 		}
         return resp;
     }
@@ -45,8 +48,7 @@ public class TCPClient {
 			out.close();
 	        clientSocket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOGGER.error("Client can't stop the connection to the target server due to {}", e);
 		}
         
     }

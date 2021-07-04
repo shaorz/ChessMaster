@@ -1,6 +1,5 @@
 package com.gomaster.game.client;
 
-import com.gomaster.game.generated.GameData;
 
 public interface IClient {
 	
@@ -10,5 +9,5 @@ public interface IClient {
 	
 	public void restart() ;
 	
-	public void send(GameData data);
+	public void send() ;
 }

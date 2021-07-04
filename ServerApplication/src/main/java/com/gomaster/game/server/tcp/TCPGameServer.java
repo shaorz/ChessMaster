@@ -8,11 +8,13 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gomaster.game.server.IServer;
+import com.google.common.hash.Hashing;
 
 /*
  * UDP vs TCP
@@ -36,6 +38,8 @@ import com.gomaster.game.server.IServer;
 public class TCPGameServer implements IServer {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(TCPGameServer.class);
+	
+	private static final String CLOSE_CONNECTION_SHA256HEX = Hashing.sha256().hashString("CLOSE_CONNECTION", StandardCharsets.UTF_8).toString();
 	
 	private int port;
 	private Thread listen_thread;
@@ -67,22 +71,48 @@ public class TCPGameServer implements IServer {
 
 		try {
 			serverSocket = new ServerSocket(port);
-			clientSocket = serverSocket.accept();
-			out = new PrintWriter(clientSocket.getOutputStream(), true);
-	        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	        String greeting = in.readLine();
-	            if ("hello server".equals(greeting)) {
-	                out.println("hello client");
-	            }
-	            else {
-	                out.println("unrecognised greeting");
-	            }
+			while (true) {
+				new TCPClientHandler(serverSocket.accept()).start();
+			}
 		} catch (IOException e) {
 			LOGGER.error("Server socket initialization failed with {}", e);
 		}
 		
-		listen_thread = new Thread(()-> listen(), "ListenerThread");
-		listen_thread.start();
+//		listen_thread = new Thread(()-> listen(), "ListenerThread");
+//		listen_thread.start();
+	}
+	
+	private static class TCPClientHandler extends Thread {
+        private Socket clientSocket;
+        private PrintWriter out;
+        private BufferedReader in;
+
+        public TCPClientHandler(Socket socket) {
+            this.clientSocket = socket;
+        }
+
+        public void run() {
+            try {
+				out = new PrintWriter(clientSocket.getOutputStream(), true);
+				in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	            
+	            String inputLine;
+	            while ((inputLine = in.readLine()) != null) {
+	                if (CLOSE_CONNECTION_SHA256HEX.equals(inputLine)) {
+	                    out.println("bye");
+	                    break;
+	                }
+	                out.println(inputLine);
+	            }
+
+	            in.close();
+	            out.close();
+	            clientSocket.close();
+            } catch (IOException e) {
+            	LOGGER.error("TCPClientHandler run failed with {}", e);
+			}
+            
+        }
 	}
 	
 	@Override

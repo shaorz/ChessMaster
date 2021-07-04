@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gomaster.game.generated.GameData;
 import com.gomaster.game.server.IServer;
 
 /*
@@ -103,7 +102,6 @@ public class UDPGameServer implements IServer{
 	}
 	
 	private void process(byte[] packet) {
-		GameData mutableGameData;
 
 	}
 	
