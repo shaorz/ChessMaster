@@ -1,0 +1,41 @@
+syntax = "proto3";
+package gamego;
+
+option java_package = "generated.com.gomaster.game.generated";
+option java_outer_classname = "GameData";
+
+message Time {
+    int32 hour = 1;
+    int32 minute = 2;
+    int32 second = 3;
+    int32 milisecond = 4;
+}
+
+message Game {
+    int64 gameId = 1;
+    string blackUserId = 2;
+    string whiteUserId = 3;
+    Timestamp startTime = 4;
+    repeated Move moves = 5;
+}
+
+message Move {
+    enum Hand {Black = 0; White = 1;}
+    int32 step = 1;
+    Hand hand = 2;
+    int32 coordinateX = 3;
+    int32 coordinateY = 4;
+}
+
+message Timestamp {
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  int32 nanos = 2;
+}
